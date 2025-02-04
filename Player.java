@@ -5,6 +5,10 @@ public class Player {
     public static final Color BLACK = Color.BLACK;
     public static final Color WHITE = Color.WHITE;
 
+    private Board kingBoard;
+
+    private Tile kingTile;
+
     private Color color;
 
     private boolean currentTurn;
@@ -20,10 +24,25 @@ public class Player {
         return currentTurn;
     }
 
+    public void setKingLocation(Board board, Tile tile) {
+        kingBoard = board;
+        kingTile = tile;
+    }
+
+    public Board getKingBoard() {
+        return kingBoard;
+    }
+
+    public Tile getKingTile() {
+        return kingTile;
+    }
+
     //changes turn
     public void flipTurn(){
         currentTurn = !currentTurn;
     }
+
+
 
     //returns player's color
     public Color getColor() {

@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.util.ArrayList;
 
 public class Rook extends ChessPiece {
     public Rook(Color color) {
@@ -14,7 +15,7 @@ public class Rook extends ChessPiece {
         return deltaX == 0 || deltaY == 0;
     }
 
-    public boolean is3DMoveValid(int deltaBoards, Tile fromTile, Tile toTile) {
+    public boolean is3DMoveValid(int deltaBoards, Tile fromTile, Tile toTile, Move lastMove) {
         int deltaY = Math.abs(fromTile.getRow() - toTile.getRow());
         int deltaX = Math.abs(fromTile.getCol() - toTile.getCol());
 
@@ -23,7 +24,8 @@ public class Rook extends ChessPiece {
         } else {
             boolean vertical = (deltaX == 0 && deltaY == deltaBoards);
             boolean horizontal = (deltaY == 0 && deltaX == deltaBoards);
-            return vertical || horizontal;
+            boolean upwards = (deltaX == 0 && deltaY == 0);
+            return vertical || horizontal || upwards;
         }
     }
 

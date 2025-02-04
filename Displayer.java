@@ -3,9 +3,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+
 public class Displayer extends JFrame {
     private Board3D board3D;
     private JPanel chessboardPanel;
+
+    final static private Color lightTile = Color.LIGHT_GRAY;
+    final static private Color darkTile = Color.DARK_GRAY;
+
+    final static private Color highlightedLightTile = new Color(51,204,255);
+
+    final static private Color highlightedDarkTile = new Color(51,153,204);
 
     private GameManager game;
 
@@ -41,6 +49,7 @@ public class Displayer extends JFrame {
     public void updateDisplay(){
         // Clear the chessboardPanel by removing all components.
         chessboardPanel.removeAll();
+        boolean highlighted = false;
 
         for (int row = 0; row < 8; row++) {
             for (int boardIndex = 0; boardIndex < 3; boardIndex++) {
@@ -48,13 +57,21 @@ public class Displayer extends JFrame {
                 for (int col = 0; col < 8; col++) {
                     Tile tile = board.getTile(row, col);
                     JButton tileButton = new JButton();
+                    highlighted = tile.getHighlight();
 
                     if ((row + col) % 2 == 0) {
-                        tileButton.setBackground(Color.LIGHT_GRAY);
+                        if (highlighted){
+                            tileButton.setBackground(highlightedLightTile);
+                        } else {
+                            tileButton.setBackground(lightTile);
+                        }
                     } else {
-                        tileButton.setBackground(Color.DARK_GRAY);
+                        if (highlighted){
+                            tileButton.setBackground(highlightedDarkTile);
+                        } else {
+                            tileButton.setBackground(darkTile);
+                        }
                     }
-
                     if (tile.isOccupied()) {
                         ChessPiece piece = tile.getPiece();
                         String pieceName = piece.getLetter();
@@ -123,7 +140,7 @@ public class Displayer extends JFrame {
         timer.setRepeats(false); // Run the timer only once
         timer.start();
 
-        game.movePiece(row, col, board3D.getBoard(boardIndex));
+        game.checkTile(row, col, board3D.getBoard(boardIndex));
 
         updateDisplay();
 

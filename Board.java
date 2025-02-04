@@ -1,25 +1,34 @@
 public class Board {
     private Tile[][] tiles;
 
-    public Board() {
+    private final String name;
 
-        initializeBoard();
+
+    public Board(String boardName) {
+        name = boardName;
+        initializeBoard(boardName);
     }
 
-    private void initializeBoard() {
+
+
+    private void initializeBoard(String boardName) {
         tiles = new Tile[8][8];
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 tiles[row][col] = new Tile(row, col);
             }
         }
-
-        //setupBoard();
     }
+
+    public String getName(){
+        return name;
+    }
+
+    public Tile[][] getTiles() {return tiles;}
 
     void setupBoard(){
 
-        //whites
+        //blacks
         tiles[0][0].setPiece(new Rook(ChessPiece.BLACK));
         tiles[0][1].setPiece(new Knight(ChessPiece.BLACK));
         tiles[0][2].setPiece(new Bishop(ChessPiece.BLACK));
@@ -29,7 +38,7 @@ public class Board {
         tiles[0][6].setPiece(new Knight(ChessPiece.BLACK));
         tiles[0][7].setPiece(new Rook(ChessPiece.BLACK));
 
-        //blacks
+        //whites
         tiles[7][0].setPiece(new Rook(ChessPiece.WHITE));
         tiles[7][1].setPiece(new Knight(ChessPiece.WHITE));
         tiles[7][2].setPiece(new Bishop(ChessPiece.WHITE));
@@ -47,7 +56,71 @@ public class Board {
 
     }
 
+    void setupBoardOneSide (String color){
+        if (color.equals("white")){
+            tiles[7][0].setPiece(new Rook(ChessPiece.WHITE));
+            tiles[7][1].setPiece(new Knight(ChessPiece.WHITE));
+            tiles[7][2].setPiece(new Bishop(ChessPiece.WHITE));
+            tiles[7][3].setPiece(new Queen(ChessPiece.WHITE));
+            tiles[7][4].setPiece(new King(ChessPiece.WHITE));
+            tiles[7][5].setPiece(new Bishop(ChessPiece.WHITE));
+            tiles[7][6].setPiece(new Knight(ChessPiece.WHITE));
+            tiles[7][7].setPiece(new Rook(ChessPiece.WHITE));
+            for (int col = 0; col < 8; col++) {
+                tiles[6][col].setPiece(new Pawn(ChessPiece.WHITE));
+            }
+
+        } else if (color.equals("black")){
+            tiles[0][0].setPiece(new Rook(ChessPiece.BLACK));
+            tiles[0][1].setPiece(new Knight(ChessPiece.BLACK));
+            tiles[0][2].setPiece(new Bishop(ChessPiece.BLACK));
+            tiles[0][3].setPiece(new Queen(ChessPiece.BLACK));
+            tiles[0][4].setPiece(new King(ChessPiece.BLACK));
+            tiles[0][5].setPiece(new Bishop(ChessPiece.BLACK));
+            tiles[0][6].setPiece(new Knight(ChessPiece.BLACK));
+            tiles[0][7].setPiece(new Rook(ChessPiece.BLACK));
+            for (int col = 0; col < 8; col++) {
+                tiles[1][col].setPiece(new Pawn(ChessPiece.BLACK));
+            }
+
+        } else {
+            throw new IllegalArgumentException("color " + color + " is not a valid color ");
+        }
+
+
+
+    }
+
+    public void removeHighlights(){
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j < 8; j++){
+                tiles[i][j].setHighlight(false);
+            }
+        }
+    }
+
+
+
+    public void debugPrintHighlightedTiles(){
+
+        System.out.println("Board " + getName());
+
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j < 8; j++){
+                if (tiles[i][j].getHighlight()){
+                    System.out.println("tile on row " + i + " and col " + j + " is highlighted" );
+                }
+            }
+        }
+
+    }
+
+
     public boolean checkPath (Tile fromTile, Tile toTile){
+
+        if (toTile == null){
+            System.out.println("check");
+        }
 
         int fromRow = fromTile.getRow();
         int fromCol = fromTile.getCol();
@@ -56,6 +129,10 @@ public class Board {
 
         System.out.println("Starting position row: " + fromRow + " " + fromCol);
         System.out.println("Final position row: " + toRow + " " + toCol);
+
+        if (toRow == 6 && toCol == 4){
+            System.out.println("check this");
+        }
 
         int deltaX = Math.abs(fromCol - toCol);
         int deltaY = Math.abs(fromRow - toRow);

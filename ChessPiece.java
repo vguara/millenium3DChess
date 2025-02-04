@@ -1,4 +1,5 @@
-import java.awt.Color;
+import java.awt.*;
+import java.util.ArrayList;
 
 public abstract class ChessPiece {
 
@@ -18,9 +19,14 @@ public abstract class ChessPiece {
     // Abstract method to validate if a move is legal for this piece
     public abstract boolean isMoveValid(Tile fromTile, Tile toTile);
 
-    public abstract boolean is3DMoveValid (int deltaBoards, Tile fromTile, Tile toTile);
+    public abstract boolean is3DMoveValid (int deltaBoards, Tile fromTile, Tile toTile, Move lastMove);
 
     public abstract String getLetter();
+
+    @Override
+    public String toString(){
+        return getColor() + " Player";
+    }
 
     // Getter methods for color and name
     public Color getColor() {

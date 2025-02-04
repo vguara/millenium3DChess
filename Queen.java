@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.util.ArrayList;
 
 public class Queen extends ChessPiece{
 
@@ -16,7 +17,7 @@ public class Queen extends ChessPiece{
     }
 
     @Override
-    public boolean is3DMoveValid(int deltaBoards, Tile fromTile, Tile toTile) {
+    public boolean is3DMoveValid(int deltaBoards, Tile fromTile, Tile toTile, Move lastMove) {
         int deltaY = Math.abs(fromTile.getRow() - toTile.getRow());
         int deltaX = Math.abs(fromTile.getCol() - toTile.getCol());
 
@@ -25,7 +26,8 @@ public class Queen extends ChessPiece{
         } else {
             boolean diagonal = (deltaX == deltaY && deltaX == deltaBoards);
             boolean horOrVert = ((deltaX == 0 & deltaY == deltaBoards) || (deltaY == 0 && deltaX == deltaBoards));
-            return diagonal || horOrVert;
+            boolean upwards = (deltaX == 0 && deltaY == 0);
+            return diagonal || horOrVert || upwards;
         }
     }
 

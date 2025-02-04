@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.util.ArrayList;
 
 public class Bishop extends ChessPiece {
 
@@ -16,7 +17,7 @@ public class Bishop extends ChessPiece {
         return deltaX == deltaY;
     }
 
-    public boolean is3DMoveValid(int deltaBoards, Tile fromTile, Tile toTile) {
+    public boolean is3DMoveValid(int deltaBoards, Tile fromTile, Tile toTile, Move lastMove) {
         int deltaY = Math.abs(fromTile.getRow() - toTile.getRow());
         int deltaX = Math.abs(fromTile.getCol() - toTile.getCol());
 
