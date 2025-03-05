@@ -1,4 +1,4 @@
-public class Board {
+public class Board implements Cloneable {
     private Tile[][] tiles;
 
     private final String name;
@@ -103,7 +103,6 @@ public class Board {
 
     public void debugPrintHighlightedTiles(){
 
-        System.out.println("Board " + getName());
 
         for (int i = 0; i < 8; i++){
             for (int j = 0; j < 8; j++){
@@ -118,21 +117,11 @@ public class Board {
 
     public boolean checkPath (Tile fromTile, Tile toTile){
 
-        if (toTile == null){
-            System.out.println("check");
-        }
-
         int fromRow = fromTile.getRow();
         int fromCol = fromTile.getCol();
         int toRow = toTile.getRow();
         int toCol = toTile.getCol();
 
-        System.out.println("Starting position row: " + fromRow + " " + fromCol);
-        System.out.println("Final position row: " + toRow + " " + toCol);
-
-        if (toRow == 6 && toCol == 4){
-            System.out.println("check this");
-        }
 
         int deltaX = Math.abs(fromCol - toCol);
         int deltaY = Math.abs(fromRow - toRow);
@@ -148,7 +137,6 @@ public class Board {
             int currentCol = fromCol + colStep;
 
             while (currentRow != toRow || currentCol != toCol) {
-                System.out.println("Checking tile row: " + currentRow + " col: " + currentCol);
                 Tile currentTile = this.getTile(currentRow, currentCol);
                 if (currentTile.isOccupied()) {
                     return false; // Path is blocked
@@ -168,4 +156,28 @@ public class Board {
             return null;
         }
     }
+
+    @Override
+    public String toString(){
+        return name +" board";
+    }
+
+    @Override
+    public Board clone() {
+        try {
+            Board clonedBoard = (Board) super.clone();
+            int rows = tiles.length;
+            int cols = tiles[0].length;
+            clonedBoard.tiles = new Tile[rows][cols];
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    clonedBoard.tiles[i][j] = tiles[i][j].clone();
+                }
+            }
+            return clonedBoard;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError("Cloning not supported", e);
+        }
+    }
+
 }

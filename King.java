@@ -4,9 +4,16 @@ import java.util.ArrayList;
 public class King extends ChessPiece{
 
     public King (Color color){
-        super(color, "K");
+        super(color, "K", "♚");
     }
 
+    /**
+     * Check if castling is possible
+     * @param fromTile tile the King is moving from
+     * @param toTile tile the King is moving to
+     * @param lastMove last moved made - used to get the board the piece is in to find the rooks
+     * @return if castling is possible.
+     */
     public boolean castlingPossible (Tile fromTile, Tile toTile, Move lastMove){
         int deltaX = fromTile.getCol() - toTile.getCol();
         if (!this.firstMove || Math.abs(deltaX) != 2 || fromTile.getRow() != toTile.getRow() || lastMove == null){
@@ -28,11 +35,6 @@ public class King extends ChessPiece{
         Board board = lastMove.getMainBoard().getBoardOfAPiece(this);
 
         ChessPiece rook = board.getTile(fromTile.getRow(), fromTile.getCol()+rookDist).getPiece();
-
-        //debug checking if rook
-        System.out.println("Row " + fromTile.getRow() + " and col " + (fromTile.getCol()+rookDist) );
-
-        System.out.println("Found rook? " + rook.getLetter());
 
 
         if (!(rook instanceof Rook) || !rook.firstMove){
@@ -62,7 +64,12 @@ public class King extends ChessPiece{
 
 
     }
-
+    /**
+     * Check if move is valid when both origin and destination tile are on the same board
+     * @param fromTile Tile that the piece is moving from
+     * @param toTile Tile that the piece is moving to
+     * @return true if move is valid
+     */
     @Override
     public boolean isMoveValid(Tile fromTile, Tile toTile) {
         int deltaX = Math.abs(fromTile.getCol() - toTile.getCol());
@@ -72,6 +79,15 @@ public class King extends ChessPiece{
         // Kings can move one square in any direction (horizontally, vertically, or diagonally).
         return deltaX <= 1 && deltaY <= 1;
     }
+
+    /**
+     * Check if move is valid when origin and destination tiles are on different boards
+     * @param deltaBoards int - Difference of boards between origin and destination tiles (0 to 2)
+     * @param fromTile Tile that the piece is moving from
+     * @param toTile Tile that the piece is moving to
+     * @param lastMove last move made - used to check if castling is possible
+     * @return true if move is valid
+     */
 
     public boolean is3DMoveValid(int deltaBoards, Tile fromTile, Tile toTile, Move lastMove) {
 
@@ -86,6 +102,21 @@ public class King extends ChessPiece{
         } else {
             return (deltaX <= deltaBoards) && (deltaY <= deltaBoards) && (deltaBoards != 2);
         }
+    }
+
+    /**
+     * Check if the piece can be promoted
+     * @param row the row the piece is in
+     * @return if the piece can be promoted.
+     */
+    @Override
+    public boolean canPromote(int row) {
+        return false;
+    }
+
+    @Override
+    public ChessPiece clone() {
+        return (King) super.clone();
     }
 
     public String getLetter() {

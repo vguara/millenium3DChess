@@ -19,15 +19,14 @@ public class GameManager {
 
     private Player playerInCheck;
 
+    private ArrayList<Snapshot> snapshots;
+
+    private int turn;
+
+    private boolean isCheckMate;
+
     public GameManager() {
-        p1 = new Player(Color.WHITE);
-        p2 = new Player(Color.BLACK);
-        boards = new Board3D("Main");
-        setInitialKing();
-        selectedTile = null;
-        selectedBoard = null;
-        moves = new ArrayList<>();
-        playerInCheck = null;
+
     }
 
     private void setInitialKing(){
@@ -36,12 +35,51 @@ public class GameManager {
 
     }
 
+    public ArrayList<Move> getMoves(){
+        return moves;
+    }
+
+
+    private void increaseTurn() {turn++;}
+
+    private void decreaseTurn() {
+        if (turn > 0){
+            turn--;
+        }
+    }
+
+    public void initialState(){
+        selectedTile = null;
+        selectedBoard = null;
+        moves = new ArrayList<>();
+        playerInCheck = null;
+        isCheckMate = false;
+        turn = 0;
+        snapshots = new ArrayList<>();
+        setInitialKing();
+    }
 
     public void startGame() {
-        // Initialize the game, set up the board, and potentially add players.
-        Displayer displayer = new Displayer(boards, this);
-        this.displayer = displayer;
+
+        p1 = new Player(Color.WHITE);
+        p2 = new Player(Color.BLACK);
+        boards = new Board3D("Main", this);
+        initialState();
+        displayer = new Displayer(boards, this);
     }
+    public void resetGame(){
+        initialState();
+        boards.resetBoards();
+        p1.resetTakenPieces();
+        p2.resetTakenPieces();
+        if (getCurrentPlayer().getColor() != Color.WHITE) {
+            p1.flipTurn();
+            p2.flipTurn();
+        }
+        displayer.updateDisplay();
+    }
+
+
 
     public boolean isGameOver() {
         // Implement game over conditions
@@ -52,6 +90,8 @@ public class GameManager {
     public Player getCurrentPlayer(){
         return p1.isCurrentTurn()? p1 : p2;
     }
+
+    public Player getOpposingPlayer() { return p1.isCurrentTurn()? p2 : p1; }
 
     public void selectTile (Tile clickedTile, Board clickedBoard){
 
@@ -66,13 +106,17 @@ public class GameManager {
                 selectedBoard = clickedBoard;
                 selectedTile.setHighlight(true);
                 Move lastmove = moves.isEmpty() ? null: moves.get(moves.size()-1);
-                boards.highlightPossibleMoves(selectedBoard, selectedTile, lastmove);
-                System.out.println("Selected tile: " + selectedTile.getRow() + ", " + selectedTile.getCol() + " on board "+ boards.getBoardIndex(selectedBoard));
+                boards.highlightPossibleMoves(selectedBoard, selectedTile, lastmove, getCurrentPlayer());
             }
         } else {
             System.out.println("clicked on an empty tile");
         }
 
+    }
+
+    public void createSnapshot(){
+        Snapshot snapshot = new Snapshot(boards, getCurrentPlayer(), turn, moves);
+        snapshots.add(snapshot);
     }
 
 
@@ -95,9 +139,15 @@ public class GameManager {
 
     }
 
-    public boolean checkPath (Board clickedBoard, Tile clickedTile){
+//    public boolean checkPath2 (Board clickedBoard, Tile clickedTile){
+//
+//        return boards.check3dPath(selectedBoard, clickedBoard, selectedTile, clickedTile);
+//
+//    }
 
-        return boards.check3dPath(selectedBoard, clickedBoard, selectedTile, clickedTile);
+    public boolean checkPath (Move move){
+
+        return boards.check3dPath2(move);
 
     }
 
@@ -105,91 +155,70 @@ public class GameManager {
 
         Move lastMove = moves.isEmpty() ? null : moves.get(moves.size()-1);
 
-        return boards.tileThreatened(player.getKingBoard(), player.getKingTile(), player.getColor(), lastMove);
+        return boards.tileThreatened2(player.getKingBoard(), player.getKingTile(), player, lastMove);
 
     }
 
-    public boolean verifyCheckMate(){
+    public void verifyCheckMate(){
 
-        if (playerInCheck != null){
-
-
+        if (playerInCheck == null){
+            return;
         }
 
-        return true;
+        //create a snapshot to test moves
+        Snapshot current = new Snapshot(boards, playerInCheck, turn, moves);
+
+        if (current.getBoard3d().checkAllMovesForMate(playerInCheck, moves.get(moves.size()-1))){
+            isCheckMate = true;
+        }
+
 
     }
 
-
-
-
-    public void makeMove (Board clickedBoard, Tile clickedTile){
-
-        // remove taken pawn if en passant
-        if (selectedTile.getPiece() instanceof Pawn && !moves.isEmpty()){
-            if (((Pawn) selectedTile.getPiece()).enPassantCondition(moves.get(moves.size()-1),selectedTile, clickedTile)){
-                moves.get(moves.size()-1).getToTile().setPiece(null);
+    public void undoLastMove(){
+        if (!moves.isEmpty()){
+            moves.getLast().undo();
+            moves.removeLast();
+            Move previousMove = null;
+            if (!moves.isEmpty()) {
+                previousMove = moves.getLast();
             }
-        }
-
-        // Detect castling and update king position
-        int deltaX = clickedTile.getCol()- selectedTile.getCol();
-        if (selectedTile.getPiece() instanceof King) {
-
-            //update king position
-            getCurrentPlayer().setKingLocation(clickedBoard, clickedTile);
-
-            //Castling move
-            if (Math.abs(deltaX) > 1) {
-                int side = deltaX > 0 ? 3 : -4;
-                ChessPiece rook = selectedBoard.getTile(selectedTile.getRow(), selectedTile.getCol() + side).getPiece();
-                clickedBoard.getTile(clickedTile.getRow(), clickedTile.getCol() + (deltaX > 0 ? -1 : 1)).setPiece(rook);
-                rook.firstMove = false;
-                System.out.println("Rook tile = " + clickedBoard.getTile(clickedTile.getRow(), clickedTile.getCol() + (deltaX > 0 ? 1 : -1)));
-                selectedBoard.getTile(selectedTile.getRow(), selectedTile.getCol() + side).setPiece(null);
+            p1.flipTurn();
+            p2.flipTurn();
+            playerInCheck = verifyCheck(getCurrentPlayer()) ? getCurrentPlayer() : null;
+            System.out.println("Check " + playerInCheck);
+            verifyCheckMate();
+            if (playerInCheck != null && previousMove != null){
+                previousMove.setCheck(true);
             }
-
+            decreaseTurn();
+            displayer.updateDisplay();
         }
-        clickedTile.setPiece(selectedTile.getPiece());
-        clickedTile.getPiece().firstMove = false;
-        selectedTile.setPiece(null);
-
-        //store Move
-        Move move = new Move(getCurrentPlayer(), selectedTile, clickedTile, clickedTile.getPiece(), selectedBoard, clickedBoard, boards);
-        moves.add(move);
-
-        p1.flipTurn();
-        p2.flipTurn();
-        playerInCheck = verifyCheck(getCurrentPlayer()) ? getCurrentPlayer() : null;
-        System.out.println("Check " + playerInCheck);
-        boards.removeAllHighlights();
-        displayer.updateDisplay();
-
     }
 
 
     public void movePiece(Tile clickedTile, Board clickedBoard) {
 
-        System.out.println("clicked with a tile selected");
-        System.out.println("Selected tile on move: " + selectedTile.getRow() + ", " + selectedTile.getCol());
-        System.out.println("Selected piece: " + selectedTile.getPiece().getLetter());
 
         // Check if the clicked tile is empty
         System.out.println("clicked on different tile");
         if (!clickedTile.isOccupied() || !clickedTile.getPiece().getColor().equals(selectedTile.getPiece().getColor())) {
 
             //here we will add 3d move validation, first pass the difference between boards
-            int deltaBoards = Math.abs((boards.getBoardIndex(selectedBoard) - boards.getBoardIndex(clickedBoard)));
+//            int deltaBoards = Math.abs((boards.getBoardIndex(selectedBoard) - boards.getBoardIndex(clickedBoard)));
 
             Move lastMove = moves.isEmpty() ? null : moves.get(moves.size()-1);
-            boolean validMove = selectedTile.getPiece().is3DMoveValid(deltaBoards, selectedTile, clickedTile, lastMove);
-            System.out.println(validMove);
-            if(validMove){
-                //check path
-                if(checkPath(clickedBoard, clickedTile)) {
+            Move currentMove = new Move(getCurrentPlayer(), selectedTile, clickedTile, selectedBoard, clickedBoard, boards, lastMove);
+            boolean validMove = currentMove.validate();
+            boolean moveAutoChecks = currentMove.moveAutoChecks(lastMove);
+            if (moveAutoChecks){
+                System.out.println("Move not allowed as it puts own king in danger");
+            }
+            //validate move and check path
+            if(validMove && checkPath(currentMove) && !moveAutoChecks){
 
-                    makeMove(clickedBoard, clickedTile);
-                }
+                currentMove.execute();
+                endTurn(currentMove);
 
             }
         }
@@ -200,6 +229,55 @@ public class GameManager {
 
     }
 
+    public ArrayList<ChessPiece> getPiecesTakenFromPlayer(Color playerColor){
+        if (playerColor == Color.white){
+            return p1.getPiecesTaken();
+        } else if (playerColor == Color.black){
+            return p2.getPiecesTaken();
+        } else {
+            throw new IllegalArgumentException("Color must be black or white");
+        }
+
+    }
+
+    public void endTurn (Move madeMove){
+
+
+        p1.flipTurn();
+        p2.flipTurn();
+        playerInCheck = verifyCheck(getCurrentPlayer()) ? getCurrentPlayer() : null;
+        System.out.println("Check " + playerInCheck);
+        verifyCheckMate();
+        if (playerInCheck != null){
+            madeMove.setCheck(true);
+        }
+
+        moves.add(madeMove);
+        if (isCheckMate){
+            System.out.println("Checkmate, game is over");
+        }
+
+        madeMove.promote();
+
+        //Temp print taken pieces.
+        System.out.println("White player taken pieces " + p1.getPiecesTaken());
+        System.out.println("Black player taken pieces " + p2.getPiecesTaken());
+        increaseTurn();
+        boards.removeAllHighlights();
+        displayer.updateDisplay();
+    }
+
+    public Player getPlayerInCheck(){
+        return playerInCheck;
+    }
+
+    public boolean getCheckMate(){
+        return isCheckMate;
+    }
+
+    public Player getPlayerBasedOnColor(Color color){
+        return (p1.getColor() == color) ? p1 : p2;
+    }
 
 
     public static void main(String[] args) {

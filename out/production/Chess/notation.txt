@@ -1,0 +1,49 @@
+Standard Chess Notation Basics:
+
+Files (columns) are labeled a to h.
+
+Ranks (rows) are numbered 1 to 8.
+
+Each square is identified by its file letter followed by its rank number (e.g., e4, d5).
+
+Pieces are represented by their initials:
+
+King: K
+
+Queen: Q
+
+Rook: R
+
+Bishop: B
+
+Knight: N
+
+Pawn: P
+
+Moves are written as:
+
+Piece initial + destination square (e.g., Nf3 for a knight moving to f3).
+
+Captures are indicated with an x (e.g., Bxe5 for a bishop capturing on e5).
+
+Special symbols: + for check, # for checkmate, 0-0 for kingside castling, and 0-0-0 for queenside castling.
+
+Millennium 3D Chess Notation:
+
+The game has three vertically stacked 8x8 boards.
+
+Levels are denoted as 1, 2, and 3.
+
+Notation with Levels:
+
+Normal Move: Indicate the level and destination square.
+
+Example: Knight from a2 on the bottom board moves to a3 on the top board: 1Na2-3a3
+
+Capture Move: Indicate the level, capture symbol, and destination square.
+
+Example: Knight from a2 on the bottom board captures a piece on a3 on the top board: 1Na2-3Nxa3
+
+Check Move: Indicate the move and add + for check.
+
+Example: Knight from a2 on the bottom board captures a piece on a3 on the top board and puts the king in check: 1Na2-3Nxa3+

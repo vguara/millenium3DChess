@@ -4,10 +4,17 @@ import java.util.ArrayList;
 public class Pawn extends ChessPiece {
 
     public Pawn(Color color) {
-        super(color, "P");
+        super(color, "P", "♟");
 
     }
 
+    /**
+     * Checks if the all en passant conditions are filled to allow en Passant move
+     * @param lastMove last move made - There are conditions related to last move
+     * @param fromTile Tile the Pawn is moving from
+     * @param toTile Tile the Pawn is moving to
+     * @return true if all en passant conditions are valid
+     */
     public boolean enPassantCondition(Move lastMove, Tile fromTile, Tile toTile){
         boolean pawnMove = lastMove.getMovedPiece() instanceof Pawn;
         boolean oppositeColor = lastMove.getMovedPiece().getColor() != super.getColor();
@@ -25,6 +32,12 @@ public class Pawn extends ChessPiece {
         return pawnMove && oppositeColor && moved2 && sameRow && nextCol && goingToNextCol && correctRow;
     }
 
+    /**
+     * Check if move is valid when both origin and destination tile are on the same board
+     * @param fromTile Tile that the piece is moving from
+     * @param toTile Tile that the piece is moving to
+     * @return true if move is valid
+     */
     @Override
     public boolean isMoveValid(Tile fromTile, Tile toTile) {
         int deltaX = Math.abs(fromTile.getCol() - toTile.getCol());
@@ -71,6 +84,7 @@ public class Pawn extends ChessPiece {
         return false; // Unknown color, not a valid move
     }
 
+
     boolean checkEnPassant(Tile fromTile, Tile toTile, Move lastMove){
         if (lastMove == null){
             return false;
@@ -79,6 +93,15 @@ public class Pawn extends ChessPiece {
 
     }
 
+
+    /**
+     * Check if move is valid when origin and destination tiles are on different boards
+     * @param deltaBoards int - Difference of boards between origin and destination tiles (0 to 2)
+     * @param fromTile Tile that the piece is moving from
+     * @param toTile Tile that the piece is moving to
+     * @param lastMove last move made - used to check for En Passant condition
+     * @return true if move is valid
+     */
     public boolean is3DMoveValid(int deltaBoards, Tile fromTile, Tile toTile, Move lastMove) {
 
         int deltaY = fromTile.getRow() - toTile.getRow(); //can't be abs because white and black move in opposite directions
@@ -92,8 +115,6 @@ public class Pawn extends ChessPiece {
         Color pieceColor = piece.getColor();
 
         boolean opposingPiece = (toTile.getPiece() != null && toTile.getPiece().getColor() != pieceColor);
-
-        System.out.println("Opposing piece? " + opposingPiece);
 
         if(deltaBoards == 0){
             boolean possibleEnPassant = checkEnPassant(fromTile, toTile, lastMove);
@@ -123,9 +144,35 @@ public class Pawn extends ChessPiece {
         return false;
     }
 
+    /**
+     * Checks if the pawn moved 2 tiles, used to check for en passant.
+     * Only allowed if it is the pawn first move, but it is optional.
+     * @param fromTile origin tile
+     * @param toTile destination tile
+     * @return true if pawn moved 2 tiles
+     */
+
     public boolean verifyMove2 (Tile fromTile, Tile toTile){
         int deltaY = Math.abs(fromTile.getRow() - toTile.getRow());
         return deltaY == 2;
+    }
+
+    @Override
+    public ChessPiece clone() {
+        return (Pawn) super.clone();
+
+    }
+
+    /**
+     * Check if the piece can be promoted
+     * @param row the row the piece is in
+     * @return if the piece can be promoted.
+     */
+    @Override
+    public boolean canPromote(int row) {
+        if (super.getColor() == WHITE && row == 0){
+            return true;
+        } else return super.getColor() == BLACK && row == 7;
     }
 
     @Override

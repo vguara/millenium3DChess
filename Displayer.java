@@ -1,12 +1,16 @@
+import javax.sound.midi.Soundbank;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 
 public class Displayer extends JFrame {
     private Board3D board3D;
     private JPanel chessboardPanel;
+
+    private JPanel infoPanel; // Add this panel for displaying information
 
     final static private Color lightTile = Color.LIGHT_GRAY;
     final static private Color darkTile = Color.DARK_GRAY;
@@ -21,31 +25,67 @@ public class Displayer extends JFrame {
         this.board3D = board3d;
         this.game = game;
         this.chessboardPanel = new JPanel(new GridLayout(8, 24));
-        setTitle("Chess Game");
+        this.infoPanel = new JPanel(); // Initialize the info panel
+        infoPanel.setLayout(new GridLayout(1, 2)); // Set a layout for the info panel
+
+        setTitle("Millennium 3D Chess Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1600, 800);
 
-        add(chessboardPanel, BorderLayout.CENTER);
+        add(chessboardPanel, BorderLayout.NORTH);
+        add(infoPanel, BorderLayout.CENTER);
+
+        infoPanel.setVisible(true);
+
+
+        JLabel moveListLabel = new JLabel("Move List: ") ; //for creation no move made
+        JLabel whitePiecesTakenLabel = new JLabel("Pieces taken by white: " ); //for creation no pieces taken
+        JLabel blackPiecesTakenLabel = new JLabel("Pieces taken by black: " ); //for creation no pieces taken
+        JLabel playerInCheckLabel = new JLabel("");
+        infoPanel.add(moveListLabel);
+        infoPanel.add(whitePiecesTakenLabel);
+        infoPanel.add(blackPiecesTakenLabel);
+        infoPanel.add(playerInCheckLabel);
 
         updateDisplay();
+
+        JPanel buttonPanel = new JPanel();
+
+
+//        JButton newGameButton = new JButton("New Game");
+//        newGameButton.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                game.resetGame();
+//            }
+//        });
+//        add(newGameButton, BorderLayout.PAGE_END);
+//        JButton undoMoveButton = new JButton("Undo");
+//        undoMoveButton.addActionListener(e -> game.undoLastMove());
+//        add(undoMoveButton, BorderLayout.PAGE_END);
 
         JButton newGameButton = new JButton("New Game");
         newGameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Handle starting a new game if needed
+                game.resetGame();
             }
         });
-        add(newGameButton, BorderLayout.SOUTH);
+        buttonPanel.add(newGameButton, BorderLayout.NORTH);
+        JButton undoMoveButton = new JButton("Undo");
+        undoMoveButton.addActionListener(e -> game.undoLastMove());
+        buttonPanel.add(undoMoveButton, BorderLayout.SOUTH);
 
-        // You can add other UI components as needed.
+        add(buttonPanel, BorderLayout.SOUTH);
+
 
         setVisible(true);
 
     }
 
-    //update display
 
+
+    //update display
     public void updateDisplay(){
         // Clear the chessboardPanel by removing all components.
         chessboardPanel.removeAll();
@@ -57,6 +97,7 @@ public class Displayer extends JFrame {
                 for (int col = 0; col < 8; col++) {
                     Tile tile = board.getTile(row, col);
                     JButton tileButton = new JButton();
+                    tileButton.setMargin(new Insets(0, 0, 0, 0));
                     highlighted = tile.getHighlight();
 
                     if ((row + col) % 2 == 0) {
@@ -74,8 +115,8 @@ public class Displayer extends JFrame {
                     }
                     if (tile.isOccupied()) {
                         ChessPiece piece = tile.getPiece();
-                        String pieceName = piece.getLetter();
-                        Font font = new Font("Arial", Font.BOLD, 24);
+                        String pieceName = piece.getPieceChar();
+                        Font font = new Font("Arial Unicode MS", Font.BOLD, 42);
                         tileButton.setForeground(piece.getColor()); // Set the text color
                         tileButton.setFont(font);
 
@@ -109,9 +150,53 @@ public class Displayer extends JFrame {
                 }
             }
         }
+
+        updateInfoPanel();
+
         // Revalidate and repaint the panel to reflect the changes.
         chessboardPanel.revalidate();
         chessboardPanel.repaint();
+        infoPanel.revalidate();
+        infoPanel.repaint();
+    }
+
+    // update the panel
+    private void updateInfoPanel(){
+        infoPanel.removeAll();
+        ArrayList<ChessPiece> whitePiecesTaken = null;
+        ArrayList<ChessPiece> blackPiecesTaken = null;
+
+        try {
+            whitePiecesTaken = game.getPiecesTakenFromPlayer(Color.white);
+            blackPiecesTaken = game.getPiecesTakenFromPlayer(Color.black);
+
+        } catch (IllegalArgumentException e){
+            System.out.println("Invalid color");
+            System.exit(1);
+        }
+        ArrayList<Move> moveList = game.getMoves();
+
+        JLabel moveListLabel = new JLabel("Move List: " + moveList);
+        JLabel whitePiecesTakenLabel = new JLabel("Pieces taken by white: " + whitePiecesTaken);
+        JLabel blackPiecesTakenLabel = new JLabel("Pieces taken by black: " + blackPiecesTaken);
+        JLabel playerInCheckLabel = new JLabel("");
+        Player playerInCheck = game.getPlayerInCheck();
+        if (playerInCheck != null){
+            playerInCheckLabel.setText(game.getOpposingPlayer()  + " check");
+            if (game.getCheckMate()){
+                playerInCheckLabel.setText(game.getOpposingPlayer()  + " checkmate");
+            }
+        }
+
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.add(moveListLabel);
+        infoPanel.add(whitePiecesTakenLabel);
+        infoPanel.add(blackPiecesTakenLabel);
+        infoPanel.add(playerInCheckLabel);
+
+        for (int i = 0; i < infoPanel.getComponentCount(); i++) {
+            infoPanel.getComponent(i).setMaximumSize(new Dimension(Integer.MAX_VALUE, infoPanel.getComponent(i).getPreferredSize().height));
+        }
 
     }
 

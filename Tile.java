@@ -1,6 +1,6 @@
 import javax.swing.*;
 
-public class Tile {
+public class Tile implements Cloneable {
     private final int row;
     private final int col;
     //private ChessPiece piece;
@@ -38,6 +38,18 @@ public class Tile {
     public String toString(){
         return "Tile row: " + this.row + " col: " + this.col;
     }
+
+    @Override
+    public Tile clone() {
+        try {
+            Tile clonedTile = (Tile) super.clone();
+            clonedTile.piece = (piece != null) ? piece.clone() : null;
+            return clonedTile;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError("Cloning not supported", e);
+        }
+    }
+
 
     public void setPiece(ChessPiece piece) {
         this.piece = piece;
